@@ -1,5 +1,5 @@
 // Built with love by Brussell
-var request = require('requst');
+var request = require('request');
 
 const SOCKET_URL = 'https://listen.moe' + '/api/socket';
 // But Brussell-senpai! Why do I have to do sockets myself?
@@ -40,7 +40,7 @@ function getUserFavs(token) {
 				reject(error);
 			if (body.success === false)
 				throw new Error(body.message)
-            resolve(body);
+			resolve(body);
 		});
 	});
 }
