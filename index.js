@@ -26,7 +26,7 @@ class ListenMo {
     }
 
     authenticate(username, password) {
-        return this._request('post', 'authenticate', { username, password }).then(data => {
+        return this._request('post', 'authenticate', { username: username || this.username, password: password || this.password }).then(data => {
             this.token = data.token;
             return token;
         });
