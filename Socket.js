@@ -28,8 +28,8 @@ class Socket extends EventEmitter {
     	this.ws.on('open', () => {
             this.emit('open');
             this._reconnectTime = 2000;
-            if (token)
-                this.authenticate(token);
+            if (this.token)
+                this.authenticate(this.token);
         });
 
         this.ws.on('message', data => {
