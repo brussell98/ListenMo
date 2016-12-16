@@ -1,82 +1,66 @@
-// Built with love by Brussell
-var request = require('request');
+const request = require('axios');
 
-const SOCKET_URL = 'https://listen.moe' + '/api/socket';
-// But Brussell-senpai! Why do I have to do sockets myself?
-// Answer: Because I'm lazy
-const SOCKET_AUTH_DATA = token => `{ "token": "${token}" }`;
+axios.defaults.baseURL = 'https://listen.moe/api/';
+axios.defaults.headers.common['User-Agent'] = 'ListenMo (v' + require('../package.json').version + ', https://github.com/brussell98/ListenMo)';
 
-function authenticat(username, password) {
-	if (password.toLowerCase() === 'password')
-		throw new Error('User is an idiot');
+class ListenMo {
+    constructor(username, password) {
+        this.username = username;
+        this.password = password;
+        this.token = null;
+        this.socket = null;
+    }
 
-	return new Promise((resolve, reject) => {
-		request.post({ url: 'https://listen.moe/api/authenticate', form: { username, password } }, function(error, response, body) {
-			if (error)
-				reject(error);
-			if (body.success === false)
-				throw new Error(body.message)
-			resolve(body);
-		});
-	});
+    _request(method, url, data = {}, requireAuth = false) {
+        return new Promise((resolve, reject) => {
+            if (requireAuth === true)
+                data['authorization'] = this.token;
+            axios({ method, url, data }).then(response => {
+                if (response.data.success === false)
+                    return reject(response.data.message);
+                resolve(response.data);
+            }).catch(error => {
+                reject(error.response ? error.response.data : error.message);
+            });
+        });
+    }
+
+    authenticate(username, password) {
+        return this._request('post', 'authenticate', { username, password }).then(data => {
+            this.token = data.token;
+            return token;
+        });
+    }
+
+    getUser() {
+        return this._request('get', 'user', {}, true);
+    }
+
+    getFavorites() {
+        return this._request('get', 'user/favorties', {}, true);
+    }
+
+    favoriteSong(song) {
+        return this._request('post', 'songs/favorite', { song }, true);
+    }
+
+    requestSong(song) {
+        return this._request('post', 'songs/request', { song }, true);
+    }
+
+    openSocket(shouldAuth = false) {
+        if (this.socket)
+            return this.socket;
+
+        try {
+            let Socket = require('./Socket.js');
+        } catch (e) {
+            throw new Error(e);
+        }
+        this.socket = new Socket();
+        this.socket.connect(shouldAuth ? this.token : null).then(resolve).catch(reject);
+        return this.socket;
+    }
 }
 
-function getUser(token) {
-	return new Promise(function(resolve, reject) {
-		request.get({ url: 'https://listen.moe/api/user', headers: { 'Authorization':token } }, function(error, response, body) {
-			if (error)
-				reject(error);
-			if (body.success === false)
-				throw new Error(body.message)
-			resolve(body);
-		});
-	});
-}
-
-function getUserFavs(token) {
-	return new Promise(function(resolve, reject) {
-		request.get({ url: 'https://listen.moe/api/user/favorites', headers: { 'Authorization': token } }, function(error, response, body) {
-			if (error)
-				reject(error);
-			if (body.success === false)
-				throw new Error(body.message)
-			resolve(body);
-		});
-	});
-}
-
-function favoriteSong(token, song) {
-	return new Promise(function(resolve, reject) {
-		request.post({ url: 'https://listen.moe/api/songs/favorite', headers: { 'Authorization': token, song } }, function(error, response, body) {
-			if (error)
-				reject(error);
-			if (body.success === false)
-				throw new Error(body.message)
-			resolve(body);
-		});
-	});
-}
-
-function request_Song(token, song) {
-	return new Promise(function(resolve, reject) {
-		request.post({ url: 'https://listen.moe/api/songs/request', headers: { 'Authorization': token, song: song } }, function(error, response, body) {
-			if (error)
-				reject(error);
-			if (body.success === false)
-				throw new Error(body.message)
-			resolve(body);
-		});
-	});
-}
-
-module.exports = {
-	authenticat,
-	getUser,
-	getUserFavs,
-	favoriteSong,
-	request_Song,
-	SOCKET_URL,
-	SOCKET_AUTH_DATA,
-	why: 'Because why not',
-	error: new Error('Hello this is Listen Dot Mo')
-}
+module.exports = ListenMo;
