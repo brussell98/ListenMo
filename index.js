@@ -1,4 +1,4 @@
-const request = require('axios');
+const axios = require('axios');
 
 axios.defaults.baseURL = 'https://listen.moe/api/';
 axios.defaults.headers.common['User-Agent'] = 'ListenMo (v' + require('../package.json').version + ', https://github.com/brussell98/ListenMo)';

@@ -38,7 +38,9 @@ class Socket extends EventEmitter {
                     this.info = JSON.parse(data);
                     this.emit('update', this.info);
                 }
-            } catch (e) {}
+            } catch (e) {
+                this.emit('updateError', e);
+            }
         });
 
         this.ws.on('error', error => {
