@@ -23,7 +23,7 @@ class Socket extends EventEmitter {
         if (this.ws !== null)
             this.ws.removeAllListeners();
 
-        this.ws = new WebSocket('https://listen.moe/api/socket');
+        this.ws = new WebSocket('https://listen.moe/api/v2/socket');
 
     	this.ws.on('open', () => {
             this.emit('open');
